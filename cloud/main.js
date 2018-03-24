@@ -8,6 +8,7 @@ Parse.Cloud.define('weappauth', (req, res) => {
   var code = req.params.code;
   console.log(`cloud:wechatLogin:code:${code}`)
   var openid;
+  var userInfo;
   //获取openId 
   Parse.Cloud.httpRequest({
     url: 'https://api.weixin.qq.com/sns/jscode2session',
@@ -22,6 +23,7 @@ Parse.Cloud.define('weappauth', (req, res) => {
     }
   }, { useMasterKey: true }).then(function (httpResponse) {
     openid = httpResponse.data.openid;
+    userInfo = httpResponse.data;
     console.log(`cloud:wechatLogin:openid:${openid}`)
     //判断是否存在此用户
     var query = new Parse.Query(Parse.User);
@@ -34,13 +36,13 @@ Parse.Cloud.define('weappauth', (req, res) => {
       var user = new Parse.User();
       user.set("username",openid);
       user.set("password", openid);
-      user.set("nickName", httpResponse.data.nickName);
-      user.set("gender", httpResponse.data.gender);
-      user.set("language", httpResponse.data.language);
-      user.set("city", httpResponse.data.city);
-      user.set("province", httpResponse.data.province);
-      user.set("country", httpResponse.data.country);
-      user.set("avatarUrl", httpResponse.data.avatarUrl);
+      user.set("nickName", userInfo.nickName);
+      user.set("gender", userInfo.gender);
+      user.set("language", userInfo.language);
+      user.set("city", userInfo.city);
+      user.set("province", userInfo.province);
+      user.set("country", userInfo.country);
+      user.set("avatarUrl", userInfo.avatarUrl);
       return user.signUp(null);
     }
   }).then(function (user) {
