@@ -7,6 +7,7 @@ Parse.Cloud.define('weappauth', (req, res) => {
   // Parse.Cloud.useMasterKey();
   var code = req.params.code;
   console.log(`cloud:wechatLogin:code:${code}`)
+  var openid;
   //获取openId 
   Parse.Cloud.httpRequest({
     url: 'https://api.weixin.qq.com/sns/jscode2session',
@@ -20,7 +21,7 @@ Parse.Cloud.define('weappauth', (req, res) => {
       grant_type: 'authorization_code',
     }
   }, { useMasterKey: true }).then(function (httpResponse) {
-    var openid = httpResponse.data.openid;
+    openid = httpResponse.data.openid;
     console.log(`cloud:wechatLogin:openid:${openid}`)
     //判断是否存在此用户
     var query = new Parse.Query(Parse.User);
