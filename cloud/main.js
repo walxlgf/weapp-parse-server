@@ -18,7 +18,7 @@ Parse.Cloud.define('weappauth', (req, res) => {
       js_code: req.params.code,
       grant_type: 'authorization_code',
     }
-  // }, { useMasterKey: true }).then(function (httpResponse) {
+    // }, { useMasterKey: true }).then(function (httpResponse) {
   }).then(function (httpResponse) {
     openid = httpResponse.data.openid;
     console.log(`cloud:weappauth:openid:${openid}`)
@@ -28,11 +28,13 @@ Parse.Cloud.define('weappauth', (req, res) => {
     return query.first();
   }).then(function (user) {
     if (user) {
+      console.log(`cloud:weappauth:login:`)
       return Parse.User.logIn(openid, openid);
     } else {
       var user = new Parse.User();
-      user.set("username",openid);
+      user.set("username", openid);
       user.set("password", openid);
+      console.log(`cloud:weappauth:signup:nickName:${req.params.nickName}`)
       user.set("nickName", req.params.nickName);
       user.set("gender", req.params.gender);
       user.set("language", req.params.language);
@@ -44,9 +46,9 @@ Parse.Cloud.define('weappauth', (req, res) => {
     }
   }).then(function (user) {
     res.success(user);
-  }, function (httpResponse) {
-    res.error(httpResponse)
-    console.error(`{"status":"${httpResponse.status}","error":"${httpResponse.error}"}`);
+  }, function (user, error) {
+    res.error(error)
+    console.error(`{"user":"${user}","error":"${user}"}`);
   });
 
 });
