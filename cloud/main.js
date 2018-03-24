@@ -4,11 +4,8 @@ const SECRET = '654f6c6559336fa79d13c85e4cb2e080';
 
 
 Parse.Cloud.define('weappauth', (req, res) => {
-  // Parse.Cloud.useMasterKey();
-  var code = req.params.code;
-  console.log(`cloud:wechatLogin:code:${code}`)
+  console.log(`cloud:weappauth:code:${req.params.code}`)
   var openid;
-  var userInfo;
   //获取openId 
   Parse.Cloud.httpRequest({
     url: 'https://api.weixin.qq.com/sns/jscode2session',
@@ -18,13 +15,13 @@ Parse.Cloud.define('weappauth', (req, res) => {
     params: {
       appid: APPID,
       secret: SECRET,
-      js_code: code,
+      js_code: req.params.code,
       grant_type: 'authorization_code',
     }
-  }, { useMasterKey: true }).then(function (httpResponse) {
+  // }, { useMasterKey: true }).then(function (httpResponse) {
+  }).then(function (httpResponse) {
     openid = httpResponse.data.openid;
-    userInfo = httpResponse.data;
-    console.log(`cloud:wechatLogin:openid:${openid}`)
+    console.log(`cloud:weappauth:openid:${openid}`)
     //判断是否存在此用户
     var query = new Parse.Query(Parse.User);
     query.equalTo("username", openid);
@@ -36,13 +33,13 @@ Parse.Cloud.define('weappauth', (req, res) => {
       var user = new Parse.User();
       user.set("username",openid);
       user.set("password", openid);
-      user.set("nickName", userInfo.nickName);
-      user.set("gender", userInfo.gender);
-      user.set("language", userInfo.language);
-      user.set("city", userInfo.city);
-      user.set("province", userInfo.province);
-      user.set("country", userInfo.country);
-      user.set("avatarUrl", userInfo.avatarUrl);
+      user.set("nickName", req.params.nickName);
+      user.set("gender", req.params.gender);
+      user.set("language", req.params.language);
+      user.set("city", req.params.city);
+      user.set("province", req.params.province);
+      user.set("country", req.params.country);
+      user.set("avatarUrl", req.params.avatarUrl);
       return user.signUp(null);
     }
   }).then(function (user) {
