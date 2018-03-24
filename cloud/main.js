@@ -45,10 +45,12 @@ Parse.Cloud.define('weappauth', (req, res) => {
       return user.signUp(null);
     }
   }).then(function (user) {
+    console.log(`{"user":"${user}","error":"${user}"}`);
+    console.log(`weappauth:user:${user}`);
     res.success(user);
   }, function (user, error) {
     res.error(error)
-    console.error(`{"user":"${user}","error":"${user}"}`);
+    console.error(`user:${user} error:${user}`);
   });
 
 });
