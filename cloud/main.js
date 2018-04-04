@@ -21,14 +21,14 @@ Parse.Cloud.define('weappauth', (req, res) => {
     // }, { useMasterKey: true }).then(function (httpResponse) {
   }).then(function (httpResponse) {
     openid = httpResponse.data.openid;
-    console.log(`weappauth:weappauth:openid:${openid}`)
+    console.log(`cloud:weappauth:openid:${openid}`)
     //判断是否存在此用户
     var query = new Parse.Query(Parse.User);
     query.equalTo("username", openid);
     return query.first();
   }).then(function (user) {
     if (user) {
-      console.log(`weappauth:weappauth:login:`)
+      console.log(`cloud:weappauth:login:`)
       return Parse.User.logIn(openid, openid);
     } else {
       var user = new Parse.User();
@@ -45,11 +45,11 @@ Parse.Cloud.define('weappauth', (req, res) => {
       return user.signUp(null);
     }
   }).then(function (user) {
-    console.log(`weappauth:user:${user}`);
+    console.log(`cloud:weappauth:user:${JSON.stringify(user)}`);
     res.success(user);
   }, function (user, error) {
     res.error(error)
-    console.error(`weappauth:user:${user} error:${user}`);
+    console.error(`cloud:weappauth:user:${user} error:${user}`);
   });
 
 });
