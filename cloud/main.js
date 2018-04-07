@@ -57,6 +57,17 @@ Parse.Cloud.define('weappAuthOnlyCode', (req, res) => {
           game.set('startChips', pgame.get('startChips'));
           game.set('startTime', pgame.get('startTime'));
           game.set('rounds', pgame.get('rounds'));
+          
+          let rebuy = pgame.get('rebuy');
+          game.set('rebuy', rebuy);
+          if (rebuy)
+            game.set('rebuyChips',  pgame.get('rebuyChips'));
+          let addon = pgame.get('addon');
+          game.set('addon', addon);
+          if (addon)
+            game.set('addonChips', pgame.get('addonChips'));
+
+          game.set('players', pgame.get('players'));
           //设置Acl
           let gameAcl = new Parse.ACL();
           gameAcl.setPublicReadAccess(false);
