@@ -9,6 +9,8 @@ ADD ./package.json ${PARSE_HOME}
 WORKDIR ${PARSE_HOME}
 RUN npm install
 
+#上传的github时，要把这两个打开 
+#本地使用docker-compose制作时要注释掉
 ADD ./cloud $CLOUD_CODE_HOME/
 ADD ./index.js ${PARSE_HOME}
 

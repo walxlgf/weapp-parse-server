@@ -21,7 +21,7 @@ const api = new ParseServer({
   // restAPIKey: REST_API_KEY,
   // clientKey: CLIENT_KEY,
   // readOnlyMasterKey: READ_ONLY_MASTER_KEY,
-  serverURL: 'http://localhost:1337/parse', // Don't forget to change to https if needed
+  // serverURL: 'http://localhost:1337/parse', // Don't forget to change to https if needed
   liveQuery: {
     classNames: ['Game', 'Device','Pattern', 'Pin']
   },

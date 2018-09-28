@@ -44,71 +44,111 @@ Parse.Cloud.define('weappAuthOnlyCode', (req, res) => {
   }).then(function (user) {
     //注册时 复制公共比赛和公共模板到当前用户下
     if (isSignUp) {
-      //复制公共比赛
-      let PublicGame = Parse.Object.extend("PublicGame");
-      let query = new Parse.Query(PublicGame);
-      query.descending('_created_at');
-      query.find().then(function (pgames) {
-        console.log(`cloud:weappAuthOnlyCode:pgames:${pgames.length}`);
-        for (pgame of pgames) {
-          let Game = Parse.Object.extend("Game");
-          let game = new Game();
-          game.set('title', pgame.get('title'));
-          game.set('startChips', pgame.get('startChips'));
-          game.set('startTime', pgame.get('startTime'));
-          game.set('rounds', pgame.get('rounds'));
-          
-          let rebuy = pgame.get('rebuy');
-          game.set('rebuy', rebuy);
-          if (rebuy)
-            game.set('rebuyChips',  pgame.get('rebuyChips'));
-          let addon = pgame.get('addon');
-          game.set('addon', addon);
-          if (addon)
-            game.set('addonChips', pgame.get('addonChips'));
+      //如果是注册 新建一个属于这个用户的角色  用于共享
 
-          game.set('players', pgame.get('players'));
-          //设置Acl
-          let gameAcl = new Parse.ACL();
-          gameAcl.setPublicReadAccess(false);
-          gameAcl.setPublicWriteAccess(false);
-          gameAcl.setReadAccess(user.id, true);
-          gameAcl.setWriteAccess(user.id, true);
-          game.set('ACL', gameAcl);
-          game.save();
-        }
+      //1、新建role
+      //2、把user加入这个role的users属性中
+      //3、user中新一个属性ownrole指向这个role
+      //4、复制公共比赛
+      //5、复制公共盲注模板
+
+      //新建访问权限
+      var roleACL = new Parse.ACL();
+      roleACL.setPublicReadAccess(true);//大家都可以读 
+      roleACL.setWriteAccess(user.id, true);//只有注册用户可以读
+      //1、新建role
+      var role = new Parse.Role(user.id, roleACL);
+      //2、把user加入这个role的users属性中
+      role.getUsers().add(user);
+      role.save().then(function (role) {
+        console.log(`cloud:weappAuthOnlyCode:roleSave:before:${role.get('name')}`);
+        //3、user中新一个属性ownrole、curRole指向这个role
+        user.set('ownRole', role);
+        user.set('curRole', role);
+        //正常情况下，已经验证过的user是可以正常save的，
+        //但不行，只能使用{ useMasterKey: true }更新user对象
+        user.save(null, { useMasterKey: true }).then(
+          function (userHasRole) {
+            console.log(`cloud:weappAuthOnlyCode:user.save:${userHasRole.get('username')}`);
+
+            //4、复制公共比赛
+            let PublicGame = Parse.Object.extend("PublicGame");
+            let query = new Parse.Query(PublicGame);
+            query.descending('_created_at');
+            query.find().then(function (pgames) {
+              console.log(`cloud:weappAuthOnlyCode:pgames:${pgames.length}`);
+              for (pgame of pgames) {
+                let Game = Parse.Object.extend("Game");
+                let game = new Game();
+                game.set('title', pgame.get('title'));
+                game.set('subTitle', pgame.get('subTitle'));
+                game.set('startChips', pgame.get('startChips'));
+                game.set('startTime', pgame.get('startTime'));
+
+                let rebuy = pgame.get('rebuy');
+                game.set('rebuy', rebuy);
+                if (rebuy)
+                  game.set('rebuyChips', pgame.get('rebuyChips'));
+                let addon = pgame.get('addon');
+                game.set('addon', addon);
+                if (addon)
+                  game.set('addonChips', pgame.get('addonChips'));
+
+                game.set('players', pgame.get('players'));
+                game.set('restPlayers', pgame.get('restPlayers'));
+                game.set('rewardPlayers', pgame.get('rewardPlayers'));
+
+                game.set('rounds', pgame.get('rounds'));
+                //设置Acl
+                let gameAcl = new Parse.ACL();
+                gameAcl.setPublicReadAccess(false);
+                gameAcl.setPublicWriteAccess(false);
+                //role 应该是user的ownRole,注册时一样的 所以直接使用
+                gameAcl.setRoleReadAccess(role, true);
+                gameAcl.setRoleWriteAccess(role, true);
+                game.set('ACL', gameAcl);
+                game.save();
+              }
+            }, function (error) {
+              console.error(error);
+            });
+
+
+            //复制公共模板
+            let PublicPattern = Parse.Object.extend("PublicPattern");
+            query = new Parse.Query(PublicPattern);
+            query.descending('_created_at');
+            query.find().then(function (ppatterns) {
+              console.log(`cloud:weappAuthOnlyCode:ppatterns:${ppatterns.length}`);
+              for (ppattern of ppatterns) {
+                let Pattern = Parse.Object.extend("Pattern");
+                let pattern = new Pattern();
+                pattern.set('title', ppattern.get('title'));
+                pattern.set('rounds', ppattern.get('rounds'));
+                //设置Acl
+                let patternAcl = new Parse.ACL();
+                patternAcl.setPublicReadAccess(false);
+                patternAcl.setPublicWriteAccess(false);
+                //role 应该是user的ownRole,注册时一样的 所以直接使用
+                patternAcl.setRoleReadAccess(role, true);
+                patternAcl.setRoleWriteAccess(role, true);
+                pattern.set('ACL', patternAcl);
+                pattern.save();
+              }
+            }, function (error) {
+              console.error(error);
+            });
+          }, function (error) {
+
+          }
+        );
       }, function (error) {
-        console.error(error);
-      });
-
-
-      //复制公共模板
-      let PublicPattern = Parse.Object.extend("PublicPattern");
-      query = new Parse.Query(PublicPattern);
-      query.descending('_created_at');
-      query.find().then(function (ppatterns) {
-        console.log(`cloud:weappAuthOnlyCode:ppatterns:${ppatterns.length}`);
-        for (ppattern of ppatterns) {
-          let Pattern = Parse.Object.extend("Pattern");
-          let pattern = new Pattern();
-          pattern.set('title', ppattern.get('title'));
-          pattern.set('rounds', ppattern.get('rounds'));
-          //设置Acl
-          let patternAcl = new Parse.ACL();
-          patternAcl.setPublicReadAccess(false);
-          patternAcl.setPublicWriteAccess(false);
-          patternAcl.setReadAccess(user.id, true);
-          patternAcl.setWriteAccess(user.id, true);
-          pattern.set('ACL', patternAcl);
-          pattern.save();
-        }
-      }, function (error) {
-        console.error(error);
+        console.log(`cloud:weappAuthOnlyCode:roleSave:error:${error}`);
       });
     }
-    console.log(`cloud:weappAuthOnlyCode:user:${JSON.stringify(user)}`);
+    // console.log(`cloud:weappAuthOnlyCode:user:${JSON.stringify(user)}`);
     res.success(user);
-    console.log(`cloud:weappAuthOnlyCode:user1:${JSON.stringify(user)}`);
+    // console.log(`cloud:weappAuthOnlyCode:user1:${JSON.stringify(user)}`);
   }, function (user, error) {
     res.error(error)
     console.error(`cloud:weappAuthOnlyCode:user:${user} error:${user}`);
