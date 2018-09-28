@@ -70,6 +70,6 @@ httpServer.listen(port, (err) => {
   if (err) {
     return console.error(err);
   }
-  console.log(`httpServer api listening on ws://localhost: ${port}/parse`);
+  // console.log(`httpServer api listening on ws://localhost: ${port}/parse`);
 });
 ParseServer.createLiveQueryServer(httpServer);
