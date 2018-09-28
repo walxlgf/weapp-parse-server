@@ -34,6 +34,7 @@ Parse.Cloud.define('weappAuthOnlyCode', (req, res) => {
       console.log(`cloud:weappAuthOnlyCode:login:`)
       return Parse.User.logIn(openid, openid);
     } else {
+      console.log(`cloud:weappAuthOnlyCode:signUp:`)
       isSignUp = true;
       //如果不存在 注册
       var user = new Parse.User();
@@ -138,6 +139,7 @@ Parse.Cloud.define('weappAuthOnlyCode', (req, res) => {
             }, function (error) {
               console.error(error);
             });
+
           }, function (error) {
 
           }
@@ -146,9 +148,9 @@ Parse.Cloud.define('weappAuthOnlyCode', (req, res) => {
         console.log(`cloud:weappAuthOnlyCode:roleSave:error:${error}`);
       });
     }
-    // console.log(`cloud:weappAuthOnlyCode:user:${JSON.stringify(user)}`);
+    console.log(`cloud:weappAuthOnlyCode:user:${JSON.stringify(user)}`);
     res.success(user);
-    // console.log(`cloud:weappAuthOnlyCode:user1:${JSON.stringify(user)}`);
+    console.log(`cloud:weappAuthOnlyCode:user1:${JSON.stringify(user)}`);
   }, function (user, error) {
     res.error(error)
     console.error(`cloud:weappAuthOnlyCode:user:${user} error:${user}`);
