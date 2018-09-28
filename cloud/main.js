@@ -42,13 +42,13 @@ Parse.Cloud.define('weappAuthOnlyCode', (req, res) => {
       user.set("password", openid);
       return user.signUp(null);
     }
-  }).then(function (user) {
-    console.log(`cloud:weappAuthOnlyCode:user:${user.get('username')}`);
-    res.success(user);
-    console.log(`cloud:weappAuthOnlyCode:user1:${user.get('username')}`);
-  }, function (user, error) {
+  }).then(function (user1) {
+    console.log(`cloud:weappAuthOnlyCode:user:${user1.get('username')}`);
+    res.success(user1);
+    console.log(`cloud:weappAuthOnlyCode:user1:${user1.get('username')}`);
+  }, function (user1, error) {
     res.error(error);
-    console.error(`cloud:weappAuthOnlyCode:user:${user} error:${user}`);
+    // console.error(`cloud:weappAuthOnlyCode:user:${user} error:${user}`);
   });
   // .catch(() => {
   //   response.error(`cloud:weappAuthOnlyCode:catch`);
