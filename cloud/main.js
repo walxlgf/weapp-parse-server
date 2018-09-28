@@ -152,10 +152,10 @@ Parse.Cloud.define('weappAuthOnlyCode', (req, res) => {
 
     console.log(`cloud:weappAuthOnlyCode:user:${user.get('username')}`);
     res.success(user);
-    console.log(`cloud:weappAuthOnlyCode:user1:${user.get('username')}`);
   }, function (user, error) {
     res.error(error)
-    console.error(`cloud:weappAuthOnlyCode:user:${user} error:${user}`);
+  }).catch(() => {
+    response.error(`cloud:weappAuthOnlyCode:catch`);
   });
 
 });
