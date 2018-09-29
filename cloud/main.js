@@ -1,12 +1,19 @@
 const APPID = 'wxc14d0ff891dbbb64';
 const SECRET = '654f6c6559336fa79d13c85e4cb2e080';
 
-Parse.Cloud.define('hello1', (req, res) => { 
+Parse.Cloud.define('hello1', (req, res) => {
   res.success('ok')
 });
 
-Parse.Cloud.define('hello2', (req) => { 
-  return 'hi';
+Parse.Cloud.define("getPublicGame", function (request, response) {
+  const query = new Parse.Query("PublicGame");
+  query.first()
+    .then((pgame) => {
+      response.success(pgame);
+    })
+    .catch(() => {
+      response.error("pgame failed");
+    });
 });
 
 
