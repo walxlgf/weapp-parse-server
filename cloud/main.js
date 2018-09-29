@@ -5,15 +5,16 @@ Parse.Cloud.define('hello1', (req, res) => {
   res.success('ok')
 });
 
-Parse.Cloud.define("getPublicGame", function (request, response) {
+Parse.Cloud.define("getPublicGame", function (request) {
   const query = new Parse.Query("PublicGame");
-  query.first()
-    .then((pgame) => {
-      response.success(pgame);
-    })
-    .catch(() => {
-      response.error("pgame failed");
-    });
+  return query.first();
+  // query.first()
+  //   .then((pgame) => {
+  //     response.success(pgame);
+  //   })
+  //   .catch(() => {
+  //     response.error("pgame failed");
+  //   });
 });
 
 
