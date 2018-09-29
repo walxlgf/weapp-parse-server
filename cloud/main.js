@@ -18,7 +18,52 @@ Parse.Cloud.define("getPublicGame", function (request) {
 });
 
 
+
 Parse.Cloud.define('weappAuthOnlyCode', (req, res) => {
+  console.log(`cloud:weappauth:code:${req.params.code}`)
+  var openid;
+  let isSignUp = false;
+
+  return Parse.Cloud.httpRequest({
+    url: 'https://api.weixin.qq.com/sns/jscode2session',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8'
+    },
+    params: {
+      appid: APPID,
+      secret: SECRET,
+      js_code: req.params.code,
+      grant_type: 'authorization_code',
+    }
+  }).then(function (httpResponse) {
+    openid = httpResponse.data.openid;
+    console.log(`cloud:weappAuthOnlyCode:openid:${openid}`)
+    //判断是否存在此用户
+    var query = new Parse.Query(Parse.User);
+    query.equalTo("username", openid);
+    return query.first();
+  }).then(function (user) {
+    //如果存在登录
+    if (user) {
+      console.log(`cloud:weappAuthOnlyCode:login:`)
+      return Parse.User.logIn(openid, openid);
+    } else {
+      console.log(`cloud:weappAuthOnlyCode:signUp:`)
+      isSignUp = true;
+      //如果不存在 注册
+      var user = new Parse.User();
+      user.set("username", openid);
+      user.set("password", openid);
+      return user.signUp(null);
+    }
+  }).catch(function (error) {
+    console.log(`cloud:weappAuthOnlyCode:error:${error}`)
+    throw error;
+  });
+});
+
+
+Parse.Cloud.define('weappAuthOnlyCode_old', (req, res) => {
   console.log(`cloud:weappauth:code:${req.params.code}`)
   var openid;
   let isSignUp = false;
