@@ -2,6 +2,13 @@
 const APPID = 'wxc14d0ff891dbbb64';
 const SECRET = '654f6c6559336fa79d13c85e4cb2e080';
 
+Parse.Cloud.define('hello1', function (req, res) {
+  res.success("hi");
+});
+
+Parse.Cloud.define('hello2', (req, res) => {
+  res.success('ok');
+});
 
 
 Parse.Cloud.define('weappAuthOnlyCode', (req, res) => {
@@ -44,13 +51,13 @@ Parse.Cloud.define('weappAuthOnlyCode', (req, res) => {
     }
   }).then(function (user) {
     console.log(`cloud:weappAuthOnlyCode:user:${user.get('username')}`);
-    // Parse.Cloud.run('signUpJob', { uesr: 'user' }, { useMasterKey: true });
+    // Parse.Cloud.startJob('signUpJob', { uesr });
     singUpFuction(user);
     res.success(user);
     // return user;
     // console.log(`cloud:weappAuthOnlyCode:user1:${user1.get('username')}`);
-  }, function (user, error) {
-    // res.error(error);
+  }, function (error) {
+    res.error(error);
     // console.error(`cloud:weappAuthOnlyCode:user:${user} error:${user}`);
   });
   // .catch(() => {
@@ -63,35 +70,6 @@ function singUpFuction(user) {
   console.log(`cloud:singUpFuction:user:${user}`);
 }
 
-
-Parse.Cloud.job("signUpJob", function (request, status) {
-  // the params passed through the start request
-  const params = request.params;
-  // Headers from the request that triggered the job
-  const headers = request.headers;
-  // get the parse-server logger
-  const log = request.log;
-
-  //如果是注册 新建一个属于这个用户的角色  用于共享
-  //1、新建role
-  //2、把user加入这个role的users属性中
-  //3、user中新一个属性ownrole指向这个role
-  //4、复制公共比赛
-  //5、复制公共盲注模板
-  let user = params.user;
-
-  console.log(`cloud:signUpJob:user:${user}`);
-  // Update the Job status message
-  // status.message("I just started");
-  // doSomethingVeryLong().then(function (result) {
-  //   // Mark the job as successful
-  //   // success and error only support string as parameters
-  //   status.success("I just finished");
-  // }).catch(function (error) {
-  //   // Mark the job as errored
-  //   status.error("There was an error");
-  // });
-});
 
 Parse.Cloud.define('weappauth', (req, res) => {
   console.log(`cloud:weappauth:code:${req.params.code}`)
