@@ -4,7 +4,7 @@ const SECRET = '654f6c6559336fa79d13c85e4cb2e080';
 
 
 
-Parse.Cloud.define('weappAuthOnlyCode', (req) => {
+Parse.Cloud.define('weappAuthOnlyCode', (req, res) => {
   console.log(`cloud:weappauth:code:${req.params.code}`)
   var openid;
   let isSignUp = false;
@@ -44,10 +44,10 @@ Parse.Cloud.define('weappAuthOnlyCode', (req) => {
     }
   }).then(function (user) {
     console.log(`cloud:weappAuthOnlyCode:user:${user.get('username')}`);
-    // Parse.Cloud.run('signUpJob', { uesr:'user' });
+    // Parse.Cloud.run('signUpJob', { uesr: 'user' }, { useMasterKey: true });
     singUpFuction(user);
-    // res.success(user);
-    return user;
+    res.success(user);
+    // return user;
     // console.log(`cloud:weappAuthOnlyCode:user1:${user1.get('username')}`);
   }, function (user, error) {
     // res.error(error);
@@ -59,7 +59,7 @@ Parse.Cloud.define('weappAuthOnlyCode', (req) => {
 
 });
 
-function singUpFuction (user){
+function singUpFuction(user) {
   console.log(`cloud:singUpFuction:user:${user}`);
 }
 
