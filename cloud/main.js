@@ -5,6 +5,11 @@ Parse.Cloud.define('hello1', (req, res) => {
   res.success('ok')
 });
 
+Parse.Cloud.define('hello2', (req) => { 
+  return 'hi';
+});
+
+
 Parse.Cloud.define('weappAuthOnlyCode', (req, res) => {
   console.log(`cloud:weappauth:code:${req.params.code}`)
   var openid;
