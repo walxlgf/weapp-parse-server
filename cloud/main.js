@@ -47,6 +47,7 @@ Parse.Cloud.define('weappAuthOnlyCode', (req) => {
       console.log(`cloud:weappAuthOnlyCode:login:`)
       return Parse.User.logIn(openid, openid);
     } else {
+      console.log(`cloud:weappAuthOnlyCode:signUp:`)
       return dealSignUp(openid);
     }
   }).catch(function (error) {
@@ -56,7 +57,7 @@ Parse.Cloud.define('weappAuthOnlyCode', (req) => {
 });
 
 
-function copyPublicGame(role) {
+function copyPublicGames(role) {
   //4、复制公共比赛
   let PublicGame = Parse.Object.extend("PublicGame");
   let query = new Parse.Query(PublicGame);
@@ -99,7 +100,7 @@ function copyPublicGame(role) {
   });
 }
 
-function copyPublicPattern(role) {
+function copyPublicPatterns(role) {
   //复制公共模板
   let PublicPattern = Parse.Object.extend("PublicPattern");
   query = new Parse.Query(PublicPattern);
@@ -127,6 +128,8 @@ function copyPublicPattern(role) {
 }
 
 function dealSignUp(openid) {
+  let signupUser;
+  let userCurRole;
   //如果不存在 注册
   //如果是注册 新建一个属于这个用户的角色  用于共享
   //0、注册用户
@@ -139,6 +142,7 @@ function dealSignUp(openid) {
   var user = new Parse.User();
   user.set("username", openid);
   user.set("password", openid);
+  console.log(`cloud:weappAuthOnlyCode:1:注册用户:`);
   return user.signUp(null).then(function (user) {
     //新建访问权限
     var roleACL = new Parse.ACL();
@@ -148,26 +152,32 @@ function dealSignUp(openid) {
     var role = new Parse.Role(user.id, roleACL);
     //2、把user加入这个role的users属性中
     role.getUsers().add(user);
+    console.log(`cloud:weappAuthOnlyCode:2、把user加入这个role的users属性中:`);
     return role.save();
   }).then(function (role) {
-    console.log(`cloud:weappAuthOnlyCode:roleSave:before:${role.get('name')}`);
+    userCurRole = role;
+    // console.log(`cloud:weappAuthOnlyCode:roleSave:before:${role.get('name')}`);
     //3、user中新一个属性ownrole、curRole指向这个role
     user.set('ownRole', role);
     user.set('curRole', role);
     //正常情况下，已经验证过的user是可以正常save的，
     //但不行，只能使用{ useMasterKey: true }更新user对象
+    console.log(`cloud:weappAuthOnlyCode:3、user中新一个属性ownrole指向这个role`);
     return user.save(null, { useMasterKey: true });
-  }).then(function (userHasRole) {
-    console.log(`cloud:weappAuthOnlyCode:userHasRole.save:${userHasRole.get('username')}`);
+  }).then(function (user) {
+    signupUser = user;
+    // console.log(`cloud:weappAuthOnlyCode:userHasRole.save:${userHasRole.get('username')}`);
     //4、复制公共比赛
-    return copyPublicGames(role);
+    console.log(`cloud:weappAuthOnlyCode:4、复制公共比赛`);
+    return copyPublicGames(userCurRole);
   }).then(function (pGames) {
-    console.log(`cloud:weappAuthOnlyCode:user.pGames:length:${pGames.length}`);
-    return copyPublicPattern(role);
+    // console.log(`cloud:weappAuthOnlyCode:user.pGames:length:${pGames.length}`);
+    console.log(`cloud:weappAuthOnlyCode:5、复制公共盲注模板`);
+    return copyPublicPatterns(userCurRole);
   }).then(function (pPatterns) {
     //5、复制公共盲注模板
-    console.log(`cloud:weappAuthOnlyCode:user.pPatterns:length:${pPatterns.length}`);
-    return user;
+    console.log(`cloud:weappAuthOnlyCode:完成`);
+    return signupUser;
   });
 }
 
