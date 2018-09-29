@@ -1,7 +1,9 @@
 const APPID = 'wxc14d0ff891dbbb64';
 const SECRET = '654f6c6559336fa79d13c85e4cb2e080';
 
-
+Parse.Cloud.define('hello1', (req, res) => { 
+  res.success('ok')
+});
 
 Parse.Cloud.define('weappAuthOnlyCode', (req, res) => {
   console.log(`cloud:weappauth:code:${req.params.code}`)
@@ -56,11 +58,11 @@ Parse.Cloud.define('weappAuthOnlyCode', (req, res) => {
           game.set('startChips', pgame.get('startChips'));
           game.set('startTime', pgame.get('startTime'));
           game.set('rounds', pgame.get('rounds'));
-          
+
           let rebuy = pgame.get('rebuy');
           game.set('rebuy', rebuy);
           if (rebuy)
-            game.set('rebuyChips',  pgame.get('rebuyChips'));
+            game.set('rebuyChips', pgame.get('rebuyChips'));
           let addon = pgame.get('addon');
           game.set('addon', addon);
           if (addon)
