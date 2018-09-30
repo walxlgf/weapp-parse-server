@@ -31,16 +31,16 @@ Parse.Cloud.define('shareRoleToOtherUser', (req) => {
     // 4、把targetUser加入sourceOwnRole的users中
     sourceOwnRole.getUsers().add(targetUser);
     console.log(`cloud:shareRoleToOtherUser:4、把targetUser加入sourceOwnRole的users中`)
-    return sourceOwnRole.save();
+    return sourceOwnRole.save(null, { useMasterKey: true });
   }).then(function (role) {
     //5、targetOwnRole的users删除targetUser  user只能存在一个role的users中。
     console.log(`cloud:shareRoleToOtherUser:5、targetOwnRole的users删除targetUser`)
     targetOwnRole.getUsers().remove(targetUser);
-    return targetOwnRole.save();
+    return targetOwnRole.save(null, { useMasterKey: true });
   }).then(function (role) {
     console.log(`cloud:shareRoleToOtherUser:6、把targetUser的curRole改成sourceOwnRole`)
     targetUser.set('curRole', sourceOwnRole);
-    return targetUser.save();
+    return targetUser.save(null, { useMasterKey: true });
   }).catch(function (error) {
     console.log(`cloud:shareRoleToOtherUser:error:${error}`)
     throw error;
