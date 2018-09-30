@@ -2,12 +2,60 @@ const APPID = 'wxc14d0ff891dbbb64';
 const SECRET = '654f6c6559336fa79d13c85e4cb2e080';
 
 /**
+ * 1、获取sourceUser和targetUser
+ * 2、获取sourceUser的ownRole为sourceOwnRole
+ * 3、获取targetUser的ownRole为targetOwnRole
+ * 4、把targetUser加入sourceOwnRole的users中
+ * 5、targetOwnRole的users删除targetUser  user只能存在一个role的users中。
+ * 6、把targetUser的curRole改成sourceOwnRole
+ */
+Parse.Cloud.define('shareRoleToOtherUser', (req) => {
+  let sourceUserId = req.params.sourceUserId;//提供角色的用户
+  let targetUserId = req.params.targetUserId;//获取到其实用户提供的权限的用
+  let sourceUser, targetUser;
+  let sourceOwnRole, targetOwnRole;
+
+  console.log(`cloud:shareRoleToOtherUser:1:获取sourceUser`)
+  //1、获取sourceUser和targetUser
+  let query = new Parse.Query(Parse.User);
+  query.include('ownRole');
+  return query.get(sourceUserId).then(function (user) {
+    sourceUser = user;
+    //2、获取sourceUser的ownRole为sourceOwnRole
+    sourceOwnRole = user.get('ownRole');
+    return query.get(targetUserId);
+  }).then(function (user) {
+    targetUser = user;
+    //3、获取targetUser的ownRole为targetOwnRole
+    targetOwnRole = user.get('ownRole');
+    // 4、把targetUser加入sourceOwnRole的users中
+    sourceOwnRole.getUsers().add(targetUser);
+    console.log(`cloud:shareRoleToOtherUser:4、把targetUser加入sourceOwnRole的users中`)
+    return sourceOwnRole.save();
+  }).then(function (role) {
+    //5、targetOwnRole的users删除targetUser  user只能存在一个role的users中。
+    console.log(`cloud:shareRoleToOtherUser:5、targetOwnRole的users删除targetUser`)
+    targetOwnRole.getUsers().remove(targetUser);
+    return targetOwnRole.save();
+  }).then(function (role) {
+    console.log(`cloud:shareRoleToOtherUser:6、把targetUser的curRole改成sourceOwnRole`)
+    targetUser.set('curRole', sourceOwnRole);
+    return targetUser.save();
+  }).catch(function (error) {
+    console.log(`cloud:shareRoleToOtherUser:error:${error}`)
+    throw error;
+  });
+})
+
+/**
  * 只能在3.0以上版本才能没有response
+ * 1、获取openid
+ * 2、判断用户是否存在 存在则登录 不存在注册
  */
 Parse.Cloud.define('weappAuthOnlyCode', (req) => {
   console.log(`cloud:weappauth:code:${req.params.code}`)
   var openid;
-  let isSignUp = false;
+  //获取openId
   return Parse.Cloud.httpRequest({
     url: 'https://api.weixin.qq.com/sns/jscode2session',
     headers: {
@@ -120,19 +168,19 @@ function copyPublicPatterns(role) {
 
 /**
  * 处理注册
+ * 如果是注册 新建一个属于这个用户的角色  用于共享
+ * 0、注册用户
+ * 1、新建role
+ * 2、把user加入这个role的users属性中
+ * 3、user中新一个属性ownrole指向这个role
+ * 4、复制公共比赛
+ * 5、复制公共盲注模板
  * @param {*} openid 
  */
 function dealSignUp(openid) {
   let signupUser;
   let userCurRole;
-  //如果不存在 注册
-  //如果是注册 新建一个属于这个用户的角色  用于共享
-  //0、注册用户
-  //1、新建role
-  //2、把user加入这个role的users属性中
-  //3、user中新一个属性ownrole指向这个role
-  //4、复制公共比赛
-  //5、复制公共盲注模板
+
   //0、注册用户
   var user = new Parse.User();
   user.set("username", openid);
@@ -229,7 +277,9 @@ Parse.Cloud.define('weappauth', (req, res) => {
 });
 
 
-
+/**
+ * 可能要修改 
+ */
 Parse.Cloud.beforeSave("Device", function (request, response) {
   const query = new Parse.Query("Device");
   query.count()
