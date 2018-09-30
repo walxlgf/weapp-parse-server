@@ -1,5 +1,50 @@
 const APPID = 'wxc14d0ff891dbbb64';
 const SECRET = '654f6c6559336fa79d13c85e4cb2e080';
+/**
+ * 1、获取user
+ * 2、获取user的curRole和ownRole
+ * 3、curRole的users删除user 。
+ * 4、把user加入ownRole的users中
+ * 5、把user的curRole改成ownRole
+ */
+Parse.Cloud.define('cancelShareRole', function (req) {
+  let userId = req.params.userId;//提供角色的用户
+  let user;
+  let curRole;
+  let ownRole;
+  //获取user
+  let query = new Parse.Query(Parse.User);
+  query.include('ownRole');
+  query.include('curRole');
+  console.log(`cloud:cancelShareRole:1、获取user`)
+  return query.get(userId).then(function (user1) {
+    user = user1;
+    // 2、获取user的curRole为curRole
+    // 3、获取user的ownRole为ownRole
+    console.log(`cloud:cancelShareRole:2、获取user的curRole和ownRole`)
+    curRole = user.get('curRole');
+    ownRole = user.get('ownRole');
+
+    //4、curRole的users删除user 。
+    curRole.getUsers().remove(user);
+    console.log(`cloud:cancelShareRole:3、curRole的users删除user 。`)
+    return curRole.save(null, { useMasterKey: true });
+  }).ther(function (curRole) {
+    // 5、把user加入ownRole的users中
+    ownRole.getUsers().add(user);
+    console.log(`cloud:cancelShareRole:4、把user加入ownRole的users中`)
+    return ownRole.save(null, { useMasterKey: true });
+  }).then(function (ownRole) {
+    //6、把user的curRole改成ownRole
+    console.log(`cloud:cancelShareRole:5、把user的curRole改成ownRole`)
+    user.set('curRole', ownRole);
+    return user.save(null, { useMasterKey: true });
+  }).catch(function (error) {
+    console.log(`cloud:shareRoleToOtherUser:error:${error}`)
+    throw error;
+  });
+})
+
 
 /**
  * 1、获取sourceUser和targetUser
@@ -14,7 +59,6 @@ Parse.Cloud.define('shareRoleToOtherUser', (req) => {
   let targetUserId = req.params.targetUserId;//获取到其实用户提供的权限的用
   let sourceUser, targetUser;
   let sourceOwnRole, targetOwnRole;
-
   console.log(`cloud:shareRoleToOtherUser:1:获取sourceUser`)
   //1、获取sourceUser和targetUser
   let query = new Parse.Query(Parse.User);
