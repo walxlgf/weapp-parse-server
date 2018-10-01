@@ -28,7 +28,7 @@ Parse.Cloud.define('cancelShareRole', function (req) {
     //4、curRole的users删除user 。
     curRole.getUsers().remove(user);
     console.log(`cloud:cancelShareRole:3、curRole的users删除user 。`)
-    return curRole.save(null, { useMasterKey: true });
+    // return curRole.save(null, { useMasterKey: true });
   }).ther(function (curRole) {
     console.log(`cloud:cancelShareRole:3.1`)
     // 5、把user加入ownRole的users中
