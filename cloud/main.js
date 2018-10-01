@@ -14,8 +14,8 @@ Parse.Cloud.define('cancelShareRole', function (req) {
   let ownRole;
   //获取user
   let query = new Parse.Query(Parse.User);
-  query.include('ownRole');
   query.include('curRole');
+  query.include('ownRole');
   console.log(`cloud:cancelShareRole:1、获取user`)
   return query.get(userId).then(function (user1) {
     user = user1;
@@ -30,6 +30,7 @@ Parse.Cloud.define('cancelShareRole', function (req) {
     console.log(`cloud:cancelShareRole:3、curRole的users删除user 。`)
     return curRole.save(null, { useMasterKey: true });
   }).ther(function (curRole) {
+    console.log(`cloud:cancelShareRole:3.1`)
     // 5、把user加入ownRole的users中
     ownRole.getUsers().add(user);
     console.log(`cloud:cancelShareRole:4、把user加入ownRole的users中`)
