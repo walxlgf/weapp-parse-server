@@ -1,6 +1,7 @@
 const APPID = 'wxc14d0ff891dbbb64';
 const SECRET = '654f6c6559336fa79d13c85e4cb2e080';
 /**
+ * 取消他们分享的权限
  * 1、获取user
  * 2、获取user的curRole和ownRole
  * 3、curRole的users删除user 。
@@ -28,7 +29,7 @@ Parse.Cloud.define('cancelShareRole', function (req) {
     //4、curRole的users删除user 。
     curRole.getUsers().remove(user);
     console.log(`cloud:cancelShareRole:3、curRole的users删除user 。`)
-    // return curRole.save(null, { useMasterKey: true });
+    return curRole.save(null, { useMasterKey: true });
   }).then(function (curRole) {
     console.log(`cloud:cancelShareRole:3.1`)
     // 5、把user加入ownRole的users中
@@ -48,6 +49,7 @@ Parse.Cloud.define('cancelShareRole', function (req) {
 
 
 /**
+ * 分享权限给他人
  * 1、获取sourceUser和targetUser
  * 2、获取sourceUser的ownRole为sourceOwnRole
  * 3、获取targetUser的ownRole为targetOwnRole
