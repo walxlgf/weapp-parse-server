@@ -354,8 +354,5 @@ Parse.Cloud.beforeSave("Device", function (request, response) {
         }
         device.set('uuid', uuid);
       }
-      response.success();
-    }, function (error) {
-      response.error(error);
     })
 });
