@@ -325,11 +325,12 @@ Parse.Cloud.define('weappauth', (req, res) => {
 
 
 /**
- * 可能要修改 
+ * 新建device对象是生成四位的UUID 
+ * 不够位自动补0 如0001
  */
-Parse.Cloud.beforeSave("Device", function (request, response) {
+Parse.Cloud.beforeSave("Device", function (request) {
   const query = new Parse.Query("Device");
-  query.count()
+  return query.count()
     .then(function (count) {
       let device = request.object;
       console.log(`beforeSave:Device:${device.get('uuid')}`)
@@ -352,7 +353,7 @@ Parse.Cloud.beforeSave("Device", function (request, response) {
         } else {
           uuid = `${count}`;
         }
-        device.set('uuid', uuid);
+        return device.set('uuid', uuid);
       }
     })
 });
