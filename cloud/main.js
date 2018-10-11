@@ -76,14 +76,16 @@ Parse.Cloud.define('shareRoleToOtherUser', (req) => {
     //3、获取targetUser的ownRole为targetOwnRole
     targetOwnRole = user.get('ownRole');
     //判断是否已经共享权限给目标用户了。
-    let users = sourceOwnRole.getUsers();
-    let userFound = users.find(function (value) {
-      return value.id === targetUserId;
-    });
+    let userFound;
+    if (sourceOwnRole.getUsers()) {
+      userFound = sourceOwnRole.getUsers().find(function (value) {
+        return value.id === targetUserId;
+      });
+    }
     //如果用户存在
     if (userFound) {
       //直接报错
-      throw `用户[${userFound.id}]已经共享了你的权限。不用重复添加。`; 
+      throw `用户[${userFound.id}]已经共享了你的权限。不用重复添加。`;
     } else {
       // 4、把targetUser加入sourceOwnRole的users中
       sourceOwnRole.getUsers().add(targetUser);
