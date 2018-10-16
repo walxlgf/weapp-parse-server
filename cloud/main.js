@@ -67,30 +67,37 @@ Parse.Cloud.define('shareRoleToOtherUser', (req) => {
   let query = new Parse.Query(Parse.User);
   query.include('ownRole');
   return query.get(sourceUserId).then(function (user) {
-    sourceUser = user;
-    //2、获取sourceUser的ownRole为sourceOwnRole
-    sourceOwnRole = user.get('ownRole');
-    return query.get(targetUserId);
-  }).then(function (user) {
-    targetUser = user;
-    //3、获取targetUser的ownRole为targetOwnRole
-    targetOwnRole = user.get('ownRole');
-    //判断是否已经共享权限给目标用户了。
-    let userFound;
-    if (sourceOwnRole.getUsers()) {
-      userFound = sourceOwnRole.getUsers().find(function (value) {
-        return value.id === targetUserId;
-      });
+    if (!user) {
+      throw new Parse.Error(1001, `源用户[${user.id}]不存在`);
+    } else {
+      sourceUser = user;
+      //2、获取sourceUser的ownRole为sourceOwnRole
+      sourceOwnRole = user.get('ownRole');
+      return query.get(targetUserId);
     }
+  }).then(function (user) {
+    if (!user) {
+      throw new Parse.Error(1002, `目标用户[${user.id}]不存在`);
+    } else {
+      targetUser = user;
+      //3、获取targetUser的ownRole为targetOwnRole
+      targetOwnRole = user.get('ownRole');
+      //判断是否已经共享权限给目标用户了。
+      let relactionUsers = sourceOwnRole.getUsers();
+      let queryUsers = relactionUsers.query();
+      queryUsers.equalTo('objectId', targetUserId);
+      return queryUsers.first();
+    }
+  }).then(function (userFound) {
     //如果用户存在
     if (userFound) {
       //直接报错
-      throw `用户[${userFound.id}]已经共享了你的权限。不用重复添加。`;
+      throw new Parse.Error(1003, `用户[${userFound.id}]已经共享了你的权限。不用重复添加。`);
     } else {
       // 4、把targetUser加入sourceOwnRole的users中
       sourceOwnRole.getUsers().add(targetUser);
       console.log(`cloud:shareRoleToOtherUser:4、把targetUser加入sourceOwnRole的users中`)
-      return sourceOwnRole.save(null, { useMasterKey: true });
+      return sourceOwnRole.save(null, { useMasterKey: true })
     }
   }).then(function (role) {
     //5、targetOwnRole的users删除targetUser  user只能存在一个role的users中。
@@ -101,9 +108,11 @@ Parse.Cloud.define('shareRoleToOtherUser', (req) => {
     console.log(`cloud:shareRoleToOtherUser:6、把targetUser的curRole改成sourceOwnRole`)
     targetUser.set('curRole', sourceOwnRole);
     return targetUser.save(null, { useMasterKey: true });
+  }).then(function (user) {
+    return { code: 200, msg: 'ok' };
   }).catch(function (error) {
     console.log(`cloud:shareRoleToOtherUser:error:${error}`)
-    throw error;
+    return { code: error.code, msg: error.message };
   });
 })
 
