@@ -2,6 +2,75 @@ const APPID = 'wxc14d0ff891dbbb64';
 const SECRET = '654f6c6559336fa79d13c85e4cb2e080';
 
 /**
+ * 把数据清空
+ * 1、清空game表
+ * 2、清空pattern表
+ * 3、清空用户表
+ * 4、清空role表
+ * 5、清空session
+ * 6、清空publicGame表
+ * 7、清空publicPattern表
+ */
+Parse.Cloud.define('clear', function (req) {
+  //1、清空game表
+  var Game = Parse.Object.extend("Game");
+  let query = new Parse.Query(Game);
+  return query.find(null, { useMasterKey: true }).then(function (games) {
+    console.log(`cloud:clear:1、清空game表`);
+    return Parse.Object.destroyAll(games, { useMasterKey: true });
+  }).then(function (games) {
+    //2、清空pattern表
+    var Pattern = Parse.Object.extend("Pattern");
+    let query = new Parse.Query(Pattern);
+    return query.find(null, { useMasterKey: true });
+  }).then(function (patterns) {
+    console.log(`cloud:clear:2、清空pattern表`);
+    return Parse.Object.destroyAll(patterns, { useMasterKey: true });
+  }).then(function (patterns) {
+    //3、清空用户表
+    let query = new Parse.Query(Parse.User);
+    return query.find(null, { useMasterKey: true });
+  }).then(function (users) {
+    console.log(`cloud:clear:3、清空用户表`);
+    return Parse.Object.destroyAll(users, { useMasterKey: true });
+  }).then(function (users) {
+    //4、清空role表
+    let query = new Parse.Query(Parse.Role);
+    return query.find(null, { useMasterKey: true });
+  }).then(function (roles) {
+    console.log(`cloud:clear:4、清空role表`);
+    return Parse.Object.destroyAll(roles, { useMasterKey: true });
+  }).then(function (users) {
+    //5、清空session
+    let query = new Parse.Query(Parse.Session);
+    return query.find(null, { useMasterKey: true });
+  }).then(function (sessions) {
+    console.log(`cloud:clear:5、清空session`);
+    return Parse.Object.destroyAll(sessions, { useMasterKey: true });
+  }).then(function (sessions) {
+    //6、清空PublicGame表
+    var PublicGame = Parse.Object.extend("PublicGame");
+    let query = new Parse.Query(PublicGame);
+    return query.find(null, { useMasterKey: true });
+  }).then(function (pgs) {
+    console.log(`cloud:clear:6、清空PublicGame表`);
+    return Parse.Object.destroyAll(pgs, { useMasterKey: true });
+  }).then(function (pgs) {
+    //6、清空PublicGame表
+    var PublicPattern = Parse.Object.extend("PublicPattern");
+    let query = new Parse.Query(PublicPattern);
+    return query.find(null, { useMasterKey: true });
+  }).then(function (pps) {
+    console.log(`cloud:clear:7、清空PublicPattern表`);
+    return Parse.Object.destroyAll(pps, { useMasterKey: true });
+  }).then(function (pps) {
+    return { code: 200, msg: 'ok' };
+  }).catch(function (error) {
+    return { code: error.code, msg: error.message };
+  });
+})
+
+/**
  * 系统初始化
  * 0、判断用户screenuser是否存在，存在说明已经初始化，不用再初始化
  * 1、新建screenuser用户 
