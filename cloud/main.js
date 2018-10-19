@@ -13,7 +13,7 @@ Parse.Cloud.define('init', function (req) {
   //0、判断用户screenuser是否存在，存在说明已经初始化，不用再初始化
   let query = new Parse.Query(Parse.User);
   query.equalTo('username', 'screenuser');
-  query.first(null, { useMasterKey: true }).then(function (user) {
+  return query.first(null, { useMasterKey: true }).then(function (user) {
     if (user) {
       throw new Parse.Error(1004, `系统初始化已完成，不需要初始化。`);
     } else {
