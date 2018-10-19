@@ -40,7 +40,8 @@ Parse.Cloud.define('init', function (req) {
     let pattern = new Pattern();
     let rounds = [];
     for (let i = 0; i < 12; i++) {
-      let round = { ante: 5, smallBlind: 10 * i, bigBlind: 20 * i, duration: 10 };
+      let level = i + 1;
+      let round = { level, ante: 5, smallBlind: 10 * i, bigBlind: 20 * i, duration: 10 };
       if (i % 4 == 0) {
         round.breakDuration = 10;
       }
