@@ -1,5 +1,90 @@
 const APPID = 'wxc14d0ff891dbbb64';
 const SECRET = '654f6c6559336fa79d13c85e4cb2e080';
+
+/**
+ * 系统初始化
+ * 0、判断用户screenuser是否存在，存在说明已经初始化，不用再初始化
+ * 1、新建screenuser用户 
+ * 2、新建screen角色 并把其加入到screen角色的users中
+ * 3、新建公共盲注模板
+ * 4、新建公共比赛,会使用刚刚新建的公共盲注模板
+ */
+Parse.Cloud.define('init', function (req) {
+  //0、判断用户screenuser是否存在，存在说明已经初始化，不用再初始化
+  let query = new Parse.Query(Parse.User);
+  query.equalTo('username', 'screenuser');
+  query.first(null, { useMasterKey: true }).then(function (user) {
+    if (user) {
+      throw new Parse.Error(1004, `系统初始化已完成，不需要初始化。`);
+    } else {
+      //1、新建screenuser用户
+      var user = new Parse.User();
+      user.set("username", 'screenuser');
+      user.set("password", '1');
+      console.log(`cloud:init:1:新建screenuser:`);
+      return user.signUp(null)
+    }
+  }).then(function (user) {
+    //2、新建screen角色 并把其加入到screen角色的users中
+    var roleACL = new Parse.ACL();
+    roleACL.setPublicReadAccess(true);//大家都可以读 
+    roleACL.setPublicWriteAccess(false);//大家都可以读
+    var role = new Parse.Role('screen', roleACL);
+    role.getUsers().add(user);
+    console.log(`cloud:init:2、新建screen角色 并把其加入到screen角色的users中`);
+    return role.save(null, { useMasterKey });
+  }).then(function (user) {
+    //3、新建公共盲注模板
+    let Pattern = Parse.Object.extend("PublicPattern");
+    let pattern = new Pattern();
+    let rounds = [];
+    for (let i = 0; i < 12; i++) {
+      let round = { ante: 5, smallBlind: 10 * i, bigBlind: 20 * i, duration: 10 };
+      if (i % 4 == 0) {
+        round.breakDuration = 10;
+      }
+      rounds.push(round);
+    }
+    pattern.set('title', '盲注模板(12级别10分钟)');
+    pattern.set('rounds', rounds);
+    //设置Acl
+    let patternAcl = new Parse.ACL();
+    patternAcl.setPublicReadAccess(true);
+    patternAcl.setPublicWriteAccess(false);
+    pattern.set('ACL', patternAcl);
+    console.log(`cloud:init:3、新建公共盲注模板`);
+    return pattern.save(null, { useMasterKey });
+  }).then(function (pattern) {
+    //4、新建公共比赛,会使用刚刚新建的公共盲注模板
+    let Game = Parse.Object.extend("PublicGame");
+    let game = new Game();
+    game.set('title', '比赛模板');
+    game.set('subTitle', '盲注:12级别10分钟');
+    game.set('startChips', 1000);
+    game.set('startTime', new Date());
+    game.set('rebuy', true);
+    game.set('rebuyChips', 1000);
+    game.set('addon', true);
+    game.set('addonChips', 1000);
+    game.set('players', 100);
+    game.set('restPlayers', 100);
+    game.set('rewardPlayers', 10);
+    game.set('rounds', pattern.get('rounds'));
+    //设置Acl
+    let gameAcl = new Parse.ACL();
+    gameAcl.setPublicReadAccess(true);
+    gameAcl.setPublicWriteAccess(false);
+    game.set('ACL', gameAcl);
+    console.log(`cloud:init:4、新建公共比赛,会使用刚刚新建的公共盲注模板`);
+    return game.save(null, { useMasterKey })
+  }).then(function (game) {
+    return { code: 200, msg: 'ok' };
+  }).catch(function (error) {
+    return { code: error.code, msg: error.message };
+  });
+})
+
+
 /**
  * 取消他们分享的权限
  * 1、获取user
