@@ -7,9 +7,9 @@ const SECRET = '654f6c6559336fa79d13c85e4cb2e080';
  * 2、清空pattern表
  * 3、清空用户表
  * 4、清空role表
- * 5、清空session
- * 6、清空publicGame表
- * 7、清空publicPattern表
+ * 5、清空publicGame表
+ * 6、清空publicPattern表
+ * 7、清空session
  */
 Parse.Cloud.define('clear', function (req) {
   //1、清空game表
@@ -40,29 +40,29 @@ Parse.Cloud.define('clear', function (req) {
   }).then(function (roles) {
     console.log(`cloud:clear:4、清空role表`);
     return Parse.Object.destroyAll(roles, { useMasterKey: true });
-  }).then(function (users) {
-    //5、清空session
-    let query = new Parse.Query(Parse.Session);
-    return query.find(null, { useMasterKey: true });
-  }).then(function (sessions) {
-    console.log(`cloud:clear:5、清空session`);
-    return Parse.Object.destroyAll(sessions, { useMasterKey: true });
-  }).then(function (sessions) {
-    //6、清空PublicGame表
+  }).then(function (roles) {
+    //5、清空PublicGame表
     var PublicGame = Parse.Object.extend("PublicGame");
     let query = new Parse.Query(PublicGame);
     return query.find(null, { useMasterKey: true });
   }).then(function (pgs) {
-    console.log(`cloud:clear:6、清空PublicGame表`);
+    console.log(`cloud:clear:5、清空PublicGame表`);
     return Parse.Object.destroyAll(pgs, { useMasterKey: true });
   }).then(function (pgs) {
-    //6、清空PublicGame表
+    //6、清空PublicPattern表
     var PublicPattern = Parse.Object.extend("PublicPattern");
     let query = new Parse.Query(PublicPattern);
     return query.find(null, { useMasterKey: true });
   }).then(function (pps) {
-    console.log(`cloud:clear:7、清空PublicPattern表`);
+    console.log(`cloud:clear:6、清空PublicPattern表`);
     return Parse.Object.destroyAll(pps, { useMasterKey: true });
+  }).then(function (pps) {
+    //7、清空session表
+    let query = new Parse.Query(Parse.Session);
+    return query.find(null, { useMasterKey: true });
+  }).then(function (sessions) {
+    console.log(`cloud:clear:7、清空session表`);
+    return Parse.Object.destroyAll(sessions, { useMasterKey: true });
   }).then(function (pps) {
     return { code: 200, msg: 'ok' };
   }).catch(function (error) {
