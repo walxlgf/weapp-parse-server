@@ -22,18 +22,19 @@ Parse.Cloud.define('init', function (req) {
       user.set("username", 'screenuser');
       user.set("password", '1');
       console.log(`cloud:init:1:新建screenuser:`);
-      return user.signUp(null)
+      return user.signUp(null);
     }
   }).then(function (user) {
     //2、新建screen角色 并把其加入到screen角色的users中
     var roleACL = new Parse.ACL();
-    roleACL.setPublicReadAccess(true);//大家都可以读 
-    roleACL.setPublicWriteAccess(false);//大家都可以读
+    roleACL.setPublicReadAccess(true);
+    roleACL.setPublicWriteAccess(false);
     var role = new Parse.Role('screen', roleACL);
     role.getUsers().add(user);
     console.log(`cloud:init:2、新建screen角色 并把其加入到screen角色的users中`);
-    return role.save(null, { useMasterKey });
-  }).then(function (user) {
+    // return role.save(null, { useMasterKey });
+    return role.save();
+  }).then(function (role) {
     //3、新建公共盲注模板
     let Pattern = Parse.Object.extend("PublicPattern");
     let pattern = new Pattern();
