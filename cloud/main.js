@@ -32,8 +32,8 @@ Parse.Cloud.define('init', function (req) {
     var role = new Parse.Role('screen', roleACL);
     role.getUsers().add(user);
     console.log(`cloud:init:2、新建screen角色 并把其加入到screen角色的users中`);
-    // return role.save(null, { useMasterKey });
-    return role.save();
+    return role.save(null, { useMasterKey: true });
+    // return role.save();
   }).then(function (role) {
     //3、新建公共盲注模板
     let Pattern = Parse.Object.extend("PublicPattern");
@@ -54,7 +54,7 @@ Parse.Cloud.define('init', function (req) {
     patternAcl.setPublicWriteAccess(false);
     pattern.set('ACL', patternAcl);
     console.log(`cloud:init:3、新建公共盲注模板`);
-    return pattern.save(null, { useMasterKey });
+    return pattern.save(null, { useMasterKey: true });
   }).then(function (pattern) {
     //4、新建公共比赛,会使用刚刚新建的公共盲注模板
     let Game = Parse.Object.extend("PublicGame");
@@ -77,7 +77,7 @@ Parse.Cloud.define('init', function (req) {
     gameAcl.setPublicWriteAccess(false);
     game.set('ACL', gameAcl);
     console.log(`cloud:init:4、新建公共比赛,会使用刚刚新建的公共盲注模板`);
-    return game.save(null, { useMasterKey })
+    return game.save(null, { useMasterKey: true })
   }).then(function (game) {
     return { code: 200, msg: 'ok' };
   }).catch(function (error) {
