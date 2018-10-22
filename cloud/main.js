@@ -56,14 +56,16 @@ Parse.Cloud.define('clear', function (req) {
   }).then(function (pps) {
     console.log(`cloud:clear:6、清空PublicPattern表`);
     return Parse.Object.destroyAll(pps, { useMasterKey: true });
-  }).then(function (pps) {
-    //7、清空session表
-    let query = new Parse.Query(Parse.Session);
-    return query.find(null, { useMasterKey: true });
-  }).then(function (sessions) {
-    console.log(`cloud:clear:7、清空session表`);
-    return Parse.Object.destroyAll(sessions, { useMasterKey: true });
-  }).then(function (pps) {
+  })
+  // .then(function (pps) {
+  //   //7、清空session表
+  //   let query = new Parse.Query(Parse.Session);
+  //   return query.find(null, { useMasterKey: true });
+  // }).then(function (sessions) {
+  //   console.log(`cloud:clear:7、清空session表`);
+  //   return Parse.Object.destroyAll(sessions, { useMasterKey: true });
+  // })
+  .then(function (pps) {
     return { code: 200, msg: 'ok' };
   }).catch(function (error) {
     return { code: error.code, msg: error.message };
