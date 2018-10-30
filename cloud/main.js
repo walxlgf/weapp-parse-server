@@ -57,19 +57,19 @@ Parse.Cloud.define('clear', function (req) {
     console.log(`cloud:clear:6、清空PublicPattern表`);
     return Parse.Object.destroyAll(pps, { useMasterKey: true });
   })
-  // .then(function (pps) {
-  //   //7、清空session表
-  //   let query = new Parse.Query(Parse.Session);
-  //   return query.find(null, { useMasterKey: true });
-  // }).then(function (sessions) {
-  //   console.log(`cloud:clear:7、清空session表`);
-  //   return Parse.Object.destroyAll(sessions, { useMasterKey: true });
-  // })
-  .then(function (pps) {
-    return { code: 200, msg: 'ok' };
-  }).catch(function (error) {
-    return { code: error.code, msg: error.message };
-  });
+    // .then(function (pps) {
+    //   //7、清空session表
+    //   let query = new Parse.Query(Parse.Session);
+    //   return query.find(null, { useMasterKey: true });
+    // }).then(function (sessions) {
+    //   console.log(`cloud:clear:7、清空session表`);
+    //   return Parse.Object.destroyAll(sessions, { useMasterKey: true });
+    // })
+    .then(function (pps) {
+      return { code: 200, msg: 'ok' };
+    }).catch(function (error) {
+      return { code: error.code, msg: error.message };
+    });
 })
 
 /**
@@ -349,6 +349,8 @@ function copyPublicGames(role) {
       game.set('rewardPlayers', pgame.get('rewardPlayers'));
 
       game.set('rounds', pgame.get('rounds'));
+      //设置role 主要为了获取背景、ICON、和大标题
+      game.set('role', role);
       //设置Acl
       let gameAcl = new Parse.ACL();
       gameAcl.setPublicReadAccess(false);
@@ -417,7 +419,7 @@ function dealSignUp(openid) {
     //新建访问权限
     var roleACL = new Parse.ACL();
     roleACL.setPublicReadAccess(true);//大家都可以读 
-    roleACL.setWriteAccess(user.id, true);//只有注册用户可以读
+    roleACL.setWriteAccess(user.id, true);//只有注册用户可以写
     //1、新建role
     var role = new Parse.Role(user.id, roleACL);
     //2、把user加入这个role的users属性中
@@ -451,57 +453,6 @@ function dealSignUp(openid) {
   });
 }
 
-
-Parse.Cloud.define('weappauth', (req, res) => {
-  console.log(`cloud:weappauth:code:${req.params.code}`)
-  var openid;
-  //获取openId 
-  Parse.Cloud.httpRequest({
-    url: 'https://api.weixin.qq.com/sns/jscode2session',
-    headers: {
-      'Content-Type': 'application/json;charset=utf-8'
-    },
-    params: {
-      appid: APPID,
-      secret: SECRET,
-      js_code: req.params.code,
-      grant_type: 'authorization_code',
-    }
-    // }, { useMasterKey: true }).then(function (httpResponse) {
-  }).then(function (httpResponse) {
-    openid = httpResponse.data.openid;
-    console.log(`cloud:weappauth:openid:${openid}`)
-    //判断是否存在此用户
-    var query = new Parse.Query(Parse.User);
-    query.equalTo("username", openid);
-    return query.first();
-  }).then(function (user) {
-    if (user) {
-      console.log(`cloud:weappauth:login:`)
-      return Parse.User.logIn(openid, openid);
-    } else {
-      var user = new Parse.User();
-      user.set("username", openid);
-      user.set("password", openid);
-      console.log(`cloud:weappauth:signup:nickName:${req.params.nickName}`)
-      user.set("nickName", req.params.nickName);
-      user.set("gender", req.params.gender);
-      user.set("language", req.params.language);
-      user.set("city", req.params.city);
-      user.set("province", req.params.province);
-      user.set("country", req.params.country);
-      user.set("avatarUrl", req.params.avatarUrl);
-      return user.signUp(null);
-    }
-  }).then(function (user) {
-    console.log(`cloud:weappauth:user:${JSON.stringify(user)}`);
-    res.success(user);
-  }, function (user, error) {
-    res.error(error)
-    console.error(`cloud:weappauth:user:${user} error:${user}`);
-  });
-
-});
 
 
 /**
