@@ -349,8 +349,6 @@ function copyPublicGames(role) {
       game.set('rewardPlayers', pgame.get('rewardPlayers'));
 
       game.set('rounds', pgame.get('rounds'));
-      //设置role 主要为了获取背景、ICON、和大标题
-      game.set('role', role);
       //设置Acl
       let gameAcl = new Parse.ACL();
       gameAcl.setPublicReadAccess(false);
