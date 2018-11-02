@@ -132,7 +132,6 @@ Parse.Cloud.define('init', function (req) {
     let Game = Parse.Object.extend("PublicGame");
     let game = new Game();
     game.set('title', '比赛模板');
-    game.set('subTitle', '盲注:12级别10分钟');
     game.set('startChips', 1000);
     game.set('startTime', new Date());
     game.set('rebuy', true);
@@ -331,7 +330,6 @@ function copyPublicGames(role) {
       let Game = Parse.Object.extend("Game");
       let game = new Game();
       game.set('title', pgame.get('title'));
-      game.set('subTitle', pgame.get('subTitle'));
       game.set('startChips', pgame.get('startChips'));
       game.set('startTime', pgame.get('startTime'));
 
