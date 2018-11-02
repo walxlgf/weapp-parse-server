@@ -419,9 +419,13 @@ function dealSignUp(openid) {
     roleACL.setPublicReadAccess(true);//大家都可以读 
     roleACL.setWriteAccess(user.id, true);//只有注册用户可以写
     //1、新建role
+    let url = "https://hulu-timer-1255588408.cos.ap-guangzhou.myqcloud.com/";
     var role = new Parse.Role(user.id, roleACL);
     //2、把user加入这个role的users属性中
     role.getUsers().add(user);
+    role.set('icon','https://hulu-timer-1255588408.cos.ap-guangzhou.myqcloud.com/i_hulu_timer.png');
+    role.set('bg','https://hulu-timer-1255588408.cos.ap-guangzhou.myqcloud.com/bg_hulu_timer.jpg');
+    role.set('title','Hulu计时器');
     console.log(`cloud:weappAuthOnlyCode:2、把user加入这个role的users属性中:`);
     return role.save();
   }).then(function (role) {
