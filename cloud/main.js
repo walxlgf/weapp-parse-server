@@ -132,16 +132,18 @@ Parse.Cloud.define('init', function (req) {
     let Game = Parse.Object.extend("PublicGame");
     let game = new Game();
     game.set('title', '比赛模板');
-    game.set('startChips', 1000);
-    game.set('startTime', new Date());
-    game.set('rebuy', true);
-    game.set('rebuyChips', 1000);
-    game.set('addon', true);
-    game.set('addonChips', 1000);
-    game.set('players', 100);
-    game.set('restPlayers', 100);
-    game.set('rewardPlayers', 10);
+    let date = new Date();
+    game.set('startTime', date);
+    game.set('startTime4View', date);
+    game.set('players', 0);
+    game.set('restPlayers', 0);
+    game.set('rewardPlayers', 0);
     game.set('rounds', pattern.get('rounds'));
+    game.set('chipss', [
+      { name: '起始', value: 1000 },
+      { name: '重买', value: 1000 },
+      { name: '加买', value: 1000 }
+    ]);
     //设置Acl
     let gameAcl = new Parse.ACL();
     gameAcl.setPublicReadAccess(true);
@@ -330,17 +332,8 @@ function copyPublicGames(role) {
       let Game = Parse.Object.extend("Game");
       let game = new Game();
       game.set('title', pgame.get('title'));
-      game.set('startChips', pgame.get('startChips'));
       game.set('startTime', pgame.get('startTime'));
-
-      let rebuy = pgame.get('rebuy');
-      game.set('rebuy', rebuy);
-      if (rebuy)
-        game.set('rebuyChips', pgame.get('rebuyChips'));
-      let addon = pgame.get('addon');
-      game.set('addon', addon);
-      if (addon)
-        game.set('addonChips', pgame.get('addonChips'));
+      game.set('chipss', pgame.get('chipss'));
 
       game.set('players', pgame.get('players'));
       game.set('restPlayers', pgame.get('restPlayers'));
@@ -421,9 +414,9 @@ function dealSignUp(openid) {
     var role = new Parse.Role(user.id, roleACL);
     //2、把user加入这个role的users属性中
     role.getUsers().add(user);
-    role.set('icon','https://hulu-timer-1255588408.cos.ap-guangzhou.myqcloud.com/i_hulu_timer.png');
-    role.set('bg','https://hulu-timer-1255588408.cos.ap-guangzhou.myqcloud.com/bg_hulu_timer.jpg');
-    role.set('title','Hulu计时器');
+    role.set('icon', 'https://hulu-timer-1255588408.cos.ap-guangzhou.myqcloud.com/i_hulu_timer.png');
+    role.set('bg', 'https://hulu-timer-1255588408.cos.ap-guangzhou.myqcloud.com/bg_hulu_timer.jpg');
+    role.set('title', 'Hulu计时器');
     console.log(`cloud:weappAuthOnlyCode:2、把user加入这个role的users属性中:`);
     return role.save();
   }).then(function (role) {
